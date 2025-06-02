@@ -1,0 +1,10 @@
+﻿{
+  "allure": {
+    "directory": "../../../../allure-results",
+    "links": [],
+    "logger": {
+      "console": true,
+      "file": "allure.log"
+    }
+  }
+}
