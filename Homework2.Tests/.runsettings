@@ -7,7 +7,7 @@
     <!-- General run configuration -->
     <RunConfiguration>
         <EnvironmentVariables>
-            <DEBUG>pw:api, pw:browser</DEBUG>
+            <DEBUG>pw:api</DEBUG>
             <ALLURE_CONFIG>allureConfig.json</ALLURE_CONFIG>
             <!--<PWDEBUG>1</PWDEBUG>-->
             <!-- Comment out for GitHub Actions-->
