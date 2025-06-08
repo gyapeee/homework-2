@@ -7,9 +7,9 @@
     <!-- General run configuration -->
     <RunConfiguration>
         <EnvironmentVariables>
-            <DEBUG>pw:api</DEBUG>
+            <DEBUG>pw:api, pw:browser</DEBUG>
             <ALLURE_CONFIG>allureConfig.json</ALLURE_CONFIG>
-            <!--<PWDEBUG>1</PWDEBUG>-->
+            <PWDEBUG>1</PWDEBUG>
             <TEST_USERNAME>testuser</TEST_USERNAME>
             <TEST_PASSWORD>testpassword</TEST_PASSWORD>
         </EnvironmentVariables>
@@ -17,11 +17,11 @@
     <!-- Playwright -->
     <Playwright>
         <BrowserName>chromium</BrowserName>
-        <ExpectTimeout>5000</ExpectTimeout>
+        <ExpectTimeout>10000</ExpectTimeout>
         <LaunchOptions>
             <Headless>false</Headless>
-            <SlowMo>500</SlowMo>
-            <Devtools>true</Devtools>
+            <SlowMo>0</SlowMo>
+            <Devtools>false</Devtools>
         </LaunchOptions>
     </Playwright>
 </RunSettings>

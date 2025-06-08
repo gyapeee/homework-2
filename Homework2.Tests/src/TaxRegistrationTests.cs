@@ -1,28 +1,32 @@
-﻿using Microsoft.Playwright;
-using Microsoft.Playwright.NUnit;
+﻿using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 using Allure.NUnit.Attributes;
-using System.Threading.Tasks;
 using Homework2.Tests.Pages;
-using System;
 using Allure.NUnit;
 
 
 namespace Homework2.Tests
 {
     [AllureNUnit]
-    [AllureSuite("Poverty Questions")]
-    public class PovertyQuestionsTests : PageTest
+    [AllureSuite("Tax Registration")]
+    public class TaxRegistrationTests : PageTest
     {
         private LoginPage _loginPage = null!;
         private SignupPage _signupPage = null!;
         private BusinessDetailsPage _businessDetailsPage = null!;
         private SelectJurisdictionPage _selectJurisdictionPage = null!;
-        private readonly TestCredentials Credentials = TestCredentials.FromEnvironmentOrDefaults();
+        private readonly TestCredentials _credentials = TestCredentials.FromEnvironmentOrDefaults();
 
         [SetUp]
         public void SetupPages()
         { 
+            // Initialize Playwright selectors to use a custom attribute for test IDs
+            // This is useful for selecting elements in tests without relying on class names or IDs that might change.
+             Playwright.Selectors.SetTestIdAttribute("data-unique-id");
+
+            // Initialize the page objects for the test
+            // These pages should be defined in your project, and they should encapsulate the logic for interacting with the respective pages.
+            // Ensure that the URLs and locators in these classes match the actual application structure.
             _loginPage = new LoginPage(Page);
             _signupPage = new SignupPage(Page);
             _businessDetailsPage = new BusinessDetailsPage(Page);
@@ -36,24 +40,29 @@ namespace Homework2.Tests
         }
 
         [Test]
-        [AllureName("Complete Poverty Questions Flow")]
+        [AllureName("Complete Tax Registration Flow")]
         [AllureEpic("Onboarding")]
         [AllureFeature("Business Registration")]
         public async Task CompletePovertyQuestionsFlow()
         {
+            // Step 1: Navigate to the login page and log in
+            // Ensure the URL matches the actual login page URL.
+            // The URL provided in the original code was "https://app.taxually.com/app/registration/select-services/about-your-business",
             await _loginPage.GoToAsync("https://app.taxually.com/");            
-            await _loginPage.LoginAsync(Credentials.Email, Credentials.Password);
-            await Expect(Page).ToHaveURLAsync("https://app.taxually.com/app/registration/select-services/about-your-business"); // Updated to match actual post-login URL
-            
+            await _loginPage.LoginAsync(_credentials.Email, _credentials.Password);
+            await Expect(Page).ToHaveURLAsync("https://app.taxually.com/verify");
+
             // Step 2: Navigate to signup page (if not automatically redirected)
             // This step is a bit ambiguous. If login directly leads to signup, this might not be needed.
             // Assuming we might need to navigate explicitly after login for this specific flow.
             await _signupPage.GoToAsync("https://app.taxually.com/signup");
-            await Expect(Page).ToHaveURLAsync("https://app.taxually.com/signup");
+            await Expect(Page).ToHaveURLAsync("https://app.taxually.com/app/registration/select-services/about-your-business");
             
             // Step 3: On the "Tell us about your business" page
-            await _businessDetailsPage.FillBusinessDetailsAsync("E-commerce", "Your Company Name", "company@example.com"); // "Your Company Name" and "company@example.com" are placeholders.
+            await _businessDetailsPage.FillBusinessDetailsAsync();
             await _businessDetailsPage.ClickNextAsync();
+            
+            await Page.PauseAsync(); // Todo remove when ready
             
             // Step 4: On the "Select jurisdiction" page
             // Step 4a: Create a method that defines how many target countries are going to be selected

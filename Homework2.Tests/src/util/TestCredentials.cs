@@ -21,7 +21,7 @@ namespace Homework2.Tests
         }
 
         // Optional: factory method to allow default values
-        public static TestCredentials FromEnvironmentOrDefaults(string defaultUsername = null, string defaultPassword = null)
+        public static TestCredentials FromEnvironmentOrDefaults(string? defaultUsername = null, string? defaultPassword = null)
         {
             var email = Environment.GetEnvironmentVariable("TEST_USERNAME") ?? defaultUsername;
             var password = Environment.GetEnvironmentVariable("TEST_PASSWORD") ?? defaultPassword;
