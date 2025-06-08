@@ -24,7 +24,7 @@ jobs:
         working-directory: Homework2.Tests/
 
       - name: Run tests
-        run: dotnet test --no-build --verbosity normal --settings Homework2.Tests/.runsettings
+        run: dotnet test --no-build --verbosity normal --settings .runsettings
         working-directory: Homework2.Tests/
 
       - name: Upload test results
