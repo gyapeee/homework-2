@@ -26,6 +26,9 @@ jobs:
       - name: Run tests
         run: PWDEBUG=0 dotnet test --no-build --verbosity normal --settings .runsettings
         working-directory: Homework2.Tests/
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USERNAME }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_PASSWORD }}
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
