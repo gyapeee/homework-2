@@ -10,8 +10,9 @@
             <DEBUG>pw:api, pw:browser</DEBUG>
             <ALLURE_CONFIG>allureConfig.json</ALLURE_CONFIG>
             <!--<PWDEBUG>1</PWDEBUG>-->
-            <TEST_USERNAME>testuser</TEST_USERNAME>
-            <TEST_PASSWORD>testpassword</TEST_PASSWORD>
+            <!-- Comment out for GitHub Actions-->
+            <!--<TEST_USERNAME>testuser</TEST_USERNAME>-->
+            <!--<TEST_PASSWORD>testpassword</TEST_PASSWORD>-->
         </EnvironmentVariables>
     </RunConfiguration>
     <!-- Playwright -->
