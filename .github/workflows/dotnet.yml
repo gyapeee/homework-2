@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright/dotnet:v1.48.0-jammy
+    env: 
+      TEST_OUTPUT_DIR: Homework2.Tests/bin/Debug/net8.0/
 
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +32,7 @@ jobs:
           ls -la
       
           echo "🚀 Running tests..."
-          PWDEBUG=0 dotnet test --no-build --verbosity normal --settings .runsettings
+          PWDEBUG=0 dotnet test --no-build --verbosity normal --settings ${{ env.TEST_OUTPUT_DIR }}.runsettings
         env:
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
@@ -40,7 +42,7 @@ jobs:
         if: always()
         with:
           name: allure-results
-          path: allure-results
+          path:  ${{ env.TEST_OUTPUT_DIR }}allure-results
 
   generate-report:
     needs: test
