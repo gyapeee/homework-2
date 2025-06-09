@@ -22,7 +22,15 @@ jobs:
         run: dotnet build --no-restore
 
       - name: Run tests
-        run: PWDEBUG=0 dotnet test --no-build --verbosity normal --settings .runsettings
+        run:  |
+          echo "📁 Current working directory:"
+          pwd
+      
+          echo "📄 Listing contents:"
+          ls -la
+      
+          echo "🚀 Running tests..."
+          PWDEBUG=0 dotnet test --no-build --verbosity normal --settings .runsettings
         env:
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
