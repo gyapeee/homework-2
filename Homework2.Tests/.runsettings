@@ -6,6 +6,8 @@
     </NUnit>
     <!-- General run configuration -->
     <RunConfiguration>
+        <!-- Allure -->
+        <TestAdaptersPaths>$(SolutionDir)\packages</TestAdaptersPaths>
         <EnvironmentVariables>
             <DEBUG>pw:api</DEBUG>
             <ALLURE_CONFIG>allureConfig.json</ALLURE_CONFIG>
@@ -23,5 +25,9 @@
             <Headless>true</Headless>
         </LaunchOptions>
     </Playwright>
+    <!-- NUnit for Allure -->
+    <NUnit>
+        <EngineEnabled>true</EngineEnabled>
+    </NUnit>
 </RunSettings>
 
