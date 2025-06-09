@@ -17,15 +17,12 @@ jobs:
 
       - name: Restore project dependencies
         run: dotnet restore
-        working-directory: Homework2.Tests/
 
       - name: Build project
         run: dotnet build --no-restore
-        working-directory: Homework2.Tests/
 
       - name: Run tests
         run: PWDEBUG=0 dotnet test --no-build --verbosity normal --settings .runsettings
-        working-directory: Homework2.Tests/
         env:
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
@@ -35,7 +32,7 @@ jobs:
         if: always()
         with:
           name: allure-results
-          path: Homework2.Tests/allure-results
+          path: allure-results
 
   generate-report:
     needs: test
