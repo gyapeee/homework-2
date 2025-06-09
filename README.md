@@ -1,8 +1,6 @@
-# Homework 2 – Automated .NET Playwright Tests
+# Homework 2 – Automated .NET Playwright Tests ![.NET Playwright Tests](https://github.com/gyapeee/homework-2/actions/workflows/dotnet.yml/badge.svg)
 
-![.NET Playwright Tests](https://github.com/gyapeee/homework-2/actions/workflows/dotnet.yml/badge.svg)
-
-📊 **Live Allure Report**:  
+📊 **Live Allure Report**  
 ➡️ [🔍 Click here to view the latest test report](https://gyapeee.github.io/homework-2/allure/)
 
 
@@ -17,10 +15,10 @@ This project contains automated tests using Playwright, NUnit and .Net with repo
 - pwsh bin/Debug/net8.0/playwright.ps1 install
 
 **Run tests**
-- dotnet test --no-build --verbosity normal --settings Homework2.Tests/.runsettings
+- dotnet test --settings Homework2.Tests/.runsettings
 
 **Generate Allure Report**
-- allure generate allure-results -o allure-report
+- allure generate .\Homework2.Tests\bin\Debug\net8.0\allure-results\ -o allure-report --clean
 
 **Open the Allure report**
 - allure open allure-report
