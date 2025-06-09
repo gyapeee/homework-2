@@ -19,14 +19,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-          
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
         with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-          restore-keys: nuget-${{ runner.os }}-
-
+          path: wd
+          
       - name: Restore project dependencies
         run: dotnet restore
 
