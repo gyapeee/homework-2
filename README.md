@@ -1,5 +1,10 @@
-# homework-2
-SDET Homework
+# Homework 2 – Automated .NET Playwright Tests
+
+![.NET Playwright Tests](https://github.com/gyapeee/homework-2/actions/workflows/.NET%20Playwright%20Tests.yml/badge.svg)
+
+📊 **Live Allure Report**:  
+➡️ [🔍 Click here to view the latest test report](https://gyapeee.github.io/homework-2/allure/)
+
 
 This project contains automated tests using Playwright, NUnit and .Net with reporting via Allure. Test execution and configuration are managed using a `.runsettings` file, which sets environment variables and test options for consistent and reproducible runs.
 
