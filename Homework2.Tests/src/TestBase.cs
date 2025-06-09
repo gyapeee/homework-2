@@ -64,8 +64,8 @@ namespace Homework2.Tests
             }
             finally
             {
-                await Page.CloseAsync();
                 await AdditionalTearDown();
+                await Page.CloseAsync();
             }
         }
 
@@ -110,7 +110,7 @@ namespace Homework2.Tests
             try
             {
                 var testName = TestContext.CurrentContext.Test.Name;
-                var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                 var traceName = $"trace-{testName}-{timestamp}.zip";
                 
                 await Context.Tracing.StopAsync(new() { Path = traceName });
