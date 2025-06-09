@@ -1,4 +1,4 @@
-# Homework 2 – Automated .NET Playwright Tests ![.NET Playwright Tests](https://github.com/gyapeee/homework-2/actions/workflows/dotnet.yml/badge.svg)
+# Automated .NET Playwright Tests ![.NET Playwright Tests](https://github.com/gyapeee/homework-2/actions/workflows/dotnet.yml/badge.svg)
 
 📊 **Live Allure Report**  
 ➡️ [🔍 Click here to view the latest test report](https://gyapeee.github.io/homework-2/allure/)
