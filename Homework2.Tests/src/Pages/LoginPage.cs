@@ -1,26 +1,24 @@
 ﻿using Microsoft.Playwright;
-using System.Threading.Tasks;
 
 namespace Homework2.Tests.Pages
 {
-    public class LoginPage
+    public class LoginPage : BasePage
     {
-        private readonly IPage _page;
+        protected override string PageUrl => "https://app.taxually.com/login";
         private readonly ILocator _emailInput;
         private readonly ILocator _passwordInput;
         private readonly ILocator _loginButton;
 
-        public LoginPage(IPage page)
+        public LoginPage(IPage page) : base(page)
         {
-            _page = page;
-            _emailInput = _page.Locator("[name='Email Address']"); // Adjust locators as per your app
-            _passwordInput = _page.Locator("[name='Password']");
-            _loginButton = _page.Locator("#next");
+            _emailInput = Page.Locator("[name='Email Address']"); // Adjust locators as per your app
+            _passwordInput = Page.Locator("[name='Password']");
+            _loginButton = Page.Locator("#next");
         }
 
         public async Task GoToAsync(string url)
         {
-            await _page.GotoAsync(url);
+            await Page.GotoAsync(url);
         }
 
         public async Task LoginAsync(string email, string password)

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
-using Allure.NUnit.Attributes;
 using Allure.NUnit;
 using Allure.Net.Commons;
 using Homework2.Tests.Pages;
@@ -12,8 +11,8 @@ namespace Homework2.Tests
     {
         protected LoginPage LoginPage = null!;
         protected SignupPage SignupPage = null!;
-        protected BusinessDetailsPage BusinessDetailsPage = null!;
-        protected SelectJurisdictionPage SelectJurisdictionPage = null!;
+        protected BusinessDetails BusinessDetails = null!;
+        protected SelectJurisdiction SelectJurisdiction = null!;
         protected readonly TestCredentials Credentials = TestCredentials.FromEnvironmentOrDefaults();
 
         [SetUp]
@@ -33,8 +32,8 @@ namespace Homework2.Tests
             // Initialize the page objects for the test
             LoginPage = new LoginPage(Page);
             SignupPage = new SignupPage(Page);
-            BusinessDetailsPage = new BusinessDetailsPage(Page);
-            SelectJurisdictionPage = new SelectJurisdictionPage(Page);
+            BusinessDetails = new BusinessDetails(Page);
+            SelectJurisdiction = new SelectJurisdiction(Page);
 
             // Additional setup that derived classes can override
             await AdditionalSetUp();

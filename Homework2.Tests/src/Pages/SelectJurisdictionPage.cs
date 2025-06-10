@@ -1,16 +1,14 @@
 ﻿using Microsoft.Playwright;
 using NUnit.Framework;
-using System;
-using System.Threading.Tasks;
+
 
 namespace Homework2.Tests.Pages
 {
-    public class SelectJurisdictionPage
+    public class SelectJurisdiction(IPage page) : BasePage(page)
     {
-        private readonly IPage _page;
+        protected override string PageUrl => "https://app.taxually.com/app/registration/select-services/jurisdiction-selection";
 
         // Extracted constants for locators and text
-        private readonly ILocator _vatElementsLocator;
         private const string TaxRegistrationServiceLabel = "Do you need a tax registration service? {0}";
         private const string OutstandingTaxReturnsLabel = "Do you have any outstanding tax returns that we should file? {0}";
         private const string RetroactivePeriodLabel = "Please select the first retroactive period";
@@ -22,15 +20,9 @@ namespace Homework2.Tests.Pages
         private const string DateFormat = "yyyy-MM-dd";
         private const int MaxRandomDaysBack = 365;
 
-        public SelectJurisdictionPage(IPage page)
-        {
-            _page = page;
-            _vatElementsLocator = _page.Locator("[id^='VAT_']");
-        }
-
         public async Task SelectTargetCountry(int count)
         {
-            var elements = await _vatElementsLocator.AllAsync();
+            var elements = await Page.Locator("[id^='VAT_']").AllAsync();
             int totalAvailable = elements.Count;
 
             if (count > totalAvailable)
@@ -44,7 +36,7 @@ namespace Homework2.Tests.Pages
         
         public async Task SelectSpecificCountry(string countryName)
         {
-            var vatElements = await _page.Locator("[id^='VAT_']").AllAsync();
+            var vatElements = await Page.Locator("[id^='VAT_']").AllAsync();
 
             var matchingElements = await Task.WhenAll(vatElements.Select(async vatContainer => new
             {
@@ -66,12 +58,12 @@ namespace Homework2.Tests.Pages
         
         public async Task SelectTaxRegistrationServiceOption(string option)
         {
-            await _page.GetByLabel(string.Format(TaxRegistrationServiceLabel, option)).ClickAsync();
+            await Page.GetByLabel(string.Format(TaxRegistrationServiceLabel, option)).ClickAsync();
         }
 
         public async Task SelectOutstandingTaxReturnsOption(string option)
         {
-            await _page.GetByLabel(string.Format(OutstandingTaxReturnsLabel, option)).ClickAsync();
+            await Page.GetByLabel(string.Format(OutstandingTaxReturnsLabel, option)).ClickAsync();
         }
 
         public async Task SelectRandomRetroactivePeriod()
@@ -79,23 +71,23 @@ namespace Homework2.Tests.Pages
             var randomDate = GenerateRandomPastDate();
             var formattedDate = FormatDateForInput(randomDate);
             
-            await _page.GetByLabel(RetroactivePeriodLabel).FillAsync(formattedDate);
-            await _page.Keyboard.PressAsync("Enter");
+            await Page.GetByLabel(RetroactivePeriodLabel).FillAsync(formattedDate);
+            await Page.Keyboard.PressAsync("Enter");
         }
 
         public async Task AcceptTermsAndConditions()
         {
-            await _page.GetByLabel(TermsAndConditionsLabel).ClickAsync();
+            await Page.GetByLabel(TermsAndConditionsLabel).ClickAsync();
         }
 
         public async Task AcceptPrivacyPolicy()
         {
-            await _page.GetByLabel(PrivacyPolicyLabel).ClickAsync();
+            await Page.GetByLabel(PrivacyPolicyLabel).ClickAsync();
         }
 
         public async Task SelectPayMonthlyOption()
         {
-            await _page.GetByRole(AriaRole.Radio, new() { Name = PayMonthlyOptionName }).ClickAsync();
+            await Page.GetByRole(AriaRole.Radio, new() { Name = PayMonthlyOptionName }).ClickAsync();
         }
 
         public async Task VerifySubscriptionFees()
@@ -118,7 +110,7 @@ namespace Homework2.Tests.Pages
 
         private async Task<decimal> GetFeeAmount(string selector)
         {
-            var feeText = await _page.Locator(selector).InnerTextAsync();
+            var feeText = await Page.Locator(selector).InnerTextAsync();
             return ExtractDecimalFromCurrencyString(feeText);
         }
 

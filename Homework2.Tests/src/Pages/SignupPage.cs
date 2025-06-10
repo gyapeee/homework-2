@@ -3,20 +3,13 @@ using System.Threading.Tasks;
 
 namespace Homework2.Tests.Pages
 {
-    public class SignupPage
+    public class SignupPage(IPage page) : BasePage(page)
     {
-        private readonly IPage _page;
-
-        public SignupPage(IPage page)
-        {
-            _page = page;
-        }
+        protected override string PageUrl => "https://app.taxually.com/verify";
 
         public async Task GoToAsync(string url)
         {
-            await _page.GotoAsync(url);
+            await Page.GotoAsync(url);
         }
-
-        // Add any specific elements/methods for the signup page if needed for this flow
     }
 }
