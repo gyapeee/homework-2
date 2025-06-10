@@ -10,10 +10,7 @@ namespace Homework2.Tests.Pages
         private readonly IPage _page;
 
         // Extracted constants for locators and text
-        private const string CountrySelectorAddButton = ".country-selector-add-button";
-        private const string CountryListItem = ".country-list-item";
-        private const string ConfirmButtonName = "Confirm";
-        private const string SearchCountryPlaceholder = "Search country";
+        private readonly ILocator _vatElementsLocator;
         private const string TaxRegistrationServiceLabel = "Do you need a tax registration service? {0}";
         private const string OutstandingTaxReturnsLabel = "Do you have any outstanding tax returns that we should file? {0}";
         private const string RetroactivePeriodLabel = "Please select the first retroactive period";
@@ -28,25 +25,45 @@ namespace Homework2.Tests.Pages
         public SelectJurisdictionPage(IPage page)
         {
             _page = page;
+            _vatElementsLocator = _page.Locator("[id^='VAT_']");
         }
 
         public async Task SelectTargetCountry(int count)
         {
-            for (int i = 0; i < count; i++)
-            {
-                await ClickAddCountryButton();
-                await SelectFirstAvailableCountry();
-            }
-            await ConfirmSelection();
-        }
+            var elements = await _vatElementsLocator.AllAsync();
+            int totalAvailable = elements.Count;
 
+            if (count > totalAvailable)
+            {
+                throw new InvalidOperationException($"Requested number of elements ({count}) " +
+                                                    $"is greater than number of VAT_ elements ({totalAvailable}).");
+            }
+
+            await Task.WhenAll(elements.Take(count).Select(e => e.ClickAsync()));
+        }
+        
         public async Task SelectSpecificCountry(string countryName)
         {
-            await SearchForCountry(countryName);
-            await SelectCountryByName(countryName);
-            await ConfirmSelection();
-        }
+            var vatElements = await _page.Locator("[id^='VAT_']").AllAsync();
 
+            var matchingElements = await Task.WhenAll(vatElements.Select(async vatContainer => new
+            {
+                Element = vatContainer,
+                CountryOption = vatContainer.Locator($"*:text('{countryName}')"),
+                Count = await vatContainer.Locator($"*:text('{countryName}')").CountAsync()
+            }));
+
+            var firstMatchingElement = matchingElements.FirstOrDefault(e => e.Count > 0);
+
+            if (firstMatchingElement != null)
+            {
+                await firstMatchingElement.CountryOption.First.ClickAsync();
+                return;
+            }
+
+            throw new InvalidOperationException($"A megadott ország ('{countryName}') nem található egyik VAT_ konténerben sem.");
+        }
+        
         public async Task SelectTaxRegistrationServiceOption(string option)
         {
             await _page.GetByLabel(string.Format(TaxRegistrationServiceLabel, option)).ClickAsync();
@@ -87,32 +104,6 @@ namespace Homework2.Tests.Pages
             var annualFee = await GetFeeAmount(AnnualFeeSelector);
 
             AssertFeeValues(monthlyFee, annualFee);
-        }
-
-        // Extracted helper methods
-        private async Task ClickAddCountryButton()
-        {
-            await _page.Locator(CountrySelectorAddButton).ClickAsync();
-        }
-
-        private async Task SelectFirstAvailableCountry()
-        {
-            await _page.Locator(CountryListItem).First.ClickAsync();
-        }
-
-        private async Task ConfirmSelection()
-        {
-            await _page.GetByRole(AriaRole.Button, new() { Name = ConfirmButtonName }).ClickAsync();
-        }
-
-        private async Task SearchForCountry(string countryName)
-        {
-            await _page.GetByPlaceholder(SearchCountryPlaceholder).FillAsync(countryName);
-        }
-
-        private async Task SelectCountryByName(string countryName)
-        {
-            await _page.Locator($"text={countryName}").ClickAsync();
         }
 
         private static DateTime GenerateRandomPastDate()
