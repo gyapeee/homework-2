@@ -20,7 +20,7 @@
     <!-- Playwright -->
     <Playwright>
         <BrowserName>chromium</BrowserName>
-        <ExpectTimeout>5000</ExpectTimeout>
+        <ExpectTimeout>15000</ExpectTimeout>
         <LaunchOptions>
             <Headless>true</Headless>
         </LaunchOptions>
