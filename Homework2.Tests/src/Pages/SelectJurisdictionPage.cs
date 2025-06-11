@@ -58,8 +58,57 @@ public class SelectJurisdiction(IPage page) : BasePage(page)
         }
 
         throw new InvalidOperationException(
-            $"A megadott ország ('{countryName}') nem található egyik VAT_ konténerben sem.");
+            $"The given country ('{countryName}') is missing in VAT_ containers.");
     }
+
+    public async Task SelectSpecificCountryAndClickRadios(string countryName)
+    {
+        await WaitForVatIds();
+        var vatElements = await Page.Locator(VatIdSelector).AllAsync();
+
+        var matchingElements = await Task.WhenAll(vatElements.Select(async vatContainer => new
+        {
+            Element = vatContainer,
+            CountryOption = vatContainer.Locator($"*:text('{countryName}')"),
+            Count = await vatContainer.Locator($"*:text('{countryName}')").CountAsync()
+        }));
+
+        var firstMatchingElement = matchingElements.FirstOrDefault(e => e.Count > 0);
+        if (firstMatchingElement == null)
+            throw new InvalidOperationException(
+                $"The given country ('{countryName}') is missing in VAT_ containers.");
+
+        await firstMatchingElement.CountryOption.First.ClickAsync();
+
+        // Get POSTFIX from ID attribute (pl. VAT_AT -> AT)
+        var containerId = await firstMatchingElement.Element.GetAttributeAsync("id");
+        if (string.IsNullOrWhiteSpace(containerId) || !containerId.StartsWith("VAT_"))
+            throw new InvalidOperationException($"Can't get the postfix from ID: '{containerId}'");
+
+        var countryCode = containerId.Substring("VAT_".Length); // pl. "AT"
+
+        // input[type='radio'][id='DE'][value='true']
+        await Page.Locator($"input[type='radio'][id='{countryCode}'][value='true']")
+            .Locator("xpath=..") //
+            .Locator("span:text('Yes')")
+            .ClickAsync();
+        await Page.Locator($"input[type='radio'][id='{countryCode}']:not([value='true'])")
+            .Locator("xpath=..") //
+            .Locator("span:text('No')")
+            .ClickAsync();
+        
+        await Page.PauseAsync();
+        
+        // await Page.Locator($"input[type='radio'][id='{countryCode}']:not([value='true'])")
+        //     .Locator("xpath=..") //
+        //     .Locator("span:text('No')")
+        //     .ClickAsync();
+        // await Page.Locator($"input[type='radio'][id='{countryCode}'][value='true']")
+        //     .Locator("xpath=..") //
+        //     .Locator("span:text('Yes')")
+        //     .ClickAsync();
+    }
+
 
     private async Task WaitForVatIds()
     {

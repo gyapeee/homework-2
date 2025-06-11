@@ -37,7 +37,7 @@ public class TaxRegistrationTests : TestBase
                 await AllureApi.Step("Select specific country: Germany", async () =>
                 {
                     var countryName = "Germany";
-                    await SelectJurisdiction.SelectSpecificCountry(countryName);
+                    await SelectJurisdiction.SelectSpecificCountryAndClickRadios(countryName);
                     AllureLifecycle.Instance.UpdateTestCase(x =>
                         x.parameters.Add(new Parameter { name = "Selected country", value = countryName }));
                 });
