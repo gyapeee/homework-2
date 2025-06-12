@@ -1,24 +1,12 @@
-﻿using Microsoft.Playwright;
-using NUnit.Framework;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
+using Allure.Net.Commons;
+using Microsoft.Playwright;
 
 namespace Homework2.Tests.Pages;
 
-public class SelectJurisdiction(IPage page) : BasePage(page)
+public class SelectJurisdiction(IPage CleanPage) : PageBase(CleanPage)
 {
-    // Extracted constants for locators and text
-    private const string TaxRegistrationServiceLabel = "Do you need a tax registration service? {0}";
-
-    private const string OutstandingTaxReturnsLabel =
-        "Do you have any outstanding tax returns that we should file? {0}";
-
-    private const string RetroactivePeriodLabel = "Please select the first retroactive period";
-    private const string TermsAndConditionsLabel = "I accept the Terms and Conditions";
-    private const string PrivacyPolicyLabel = "I accept the Privacy Policy";
-    private const string PayMonthlyOptionName = "Pay monthly";
-    private const string MonthlyFeeSelector = ".monthly-fee-display";
-    private const string AnnualFeeSelector = ".annual-fee-display";
-    private const string DateFormat = "yyyy-MM-dd";
-    private const int MaxRandomDaysBack = 365;
     private static readonly string VatIdSelector = "[id^='VAT_']";
 
     protected override string PageUrl =>
@@ -27,7 +15,7 @@ public class SelectJurisdiction(IPage page) : BasePage(page)
     public async Task SelectTargetCountry(int count)
     {
         await WaitForVatIds();
-        var elements = await Page.Locator(VatIdSelector).AllAsync();
+        var elements = await CleanPage.Locator(VatIdSelector).AllAsync();
         var totalAvailable = elements.Count;
 
         if (count > totalAvailable)
@@ -40,7 +28,7 @@ public class SelectJurisdiction(IPage page) : BasePage(page)
     public async Task SelectSpecificCountryAndClickRadios(string countryName)
     {
         await WaitForVatIds();
-        var vatElements = await Page.Locator(VatIdSelector).AllAsync();
+        var vatElements = await CleanPage.Locator(VatIdSelector).AllAsync();
 
         var matchingElements = await Task.WhenAll(vatElements.Select(async vatContainer => new
         {
@@ -54,7 +42,25 @@ public class SelectJurisdiction(IPage page) : BasePage(page)
             throw new InvalidOperationException(
                 $"The given country ('{countryName}') is missing in VAT_ containers.");
 
+        // Get the checkbox container within the matching VAT block
+        var checkboxContainer = firstMatchingElement.Element.Locator(".tuui-checkbox-checkmark");
+
+        // Ensure country name is visible (it could be hidden initially)
+        await firstMatchingElement.CountryOption.First.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 5000
+        });
+
+        // Click the label (the Germany text acts as the checkbox label)
         await firstMatchingElement.CountryOption.First.ClickAsync();
+
+        // Wait until the checkbox gets the "checked" class
+        await Assertions.Expect(checkboxContainer).ToHaveClassAsync(
+            new Regex(".*tuui-checkbox-checkmark-checked.*"), new LocatorAssertionsToHaveClassOptions
+            {
+                Timeout = 5000
+            });
 
         // Get POSTFIX from ID attribute (pl. VAT_AT -> AT)
         var containerId = await firstMatchingElement.Element.GetAttributeAsync("id");
@@ -63,96 +69,103 @@ public class SelectJurisdiction(IPage page) : BasePage(page)
 
         var countryCode = containerId.Substring("VAT_".Length); // pl. "AT"
 
-        await Page.PauseAsync();
+        await ClickOnAllRadioButtonsOfCountry(countryCode);
 
-        // input[type='radio'][value='true'][id='DE'][name='DE_jurisdiction-vat-registration-group']
-        await Page.Locator(
-                $"input[type='radio'][id='{countryCode}'][name='{countryCode}_jurisdiction-vat-registration-group']")
-            .Locator("xpath=ancestor::label//span[text()='Yes']").ClickAsync();
+        await SelectDateAsFirstRetroactivePeriod();
+        await ClickOnTermsIfNotSelected();
+        await ClickOnPayMonthlyIfNotSelected();
+        await AssertMonthlyFeeIsGreaterThanZeroAsync();
 
-        await Page.PauseAsync();
+        //app-calendar-input
+        await CleanPage.PauseAsync();
+    }
 
-        await Page.Locator(
-                $"input[type='radio'][id='{countryCode}'][name='{countryCode}_jurisdiction-vat-registration-group']")
-            .Locator("xpath=ancestor::label//span[text()='No']").ClickAsync();
+    private async Task ClickOnAllRadioButtonsOfCountry(string countryCode)
+    {
+        var registrationGroupYesLocator =
+            $"//input[@type='radio' and @id='{countryCode}' and @name='{countryCode}_jurisdiction-vat-registration-group']/ancestor::label//small[text()='Help me to get a tax number']";
+        await SelectRadioButton(registrationGroupYesLocator);
 
-        await Page.PauseAsync();
+        var registrationGroupNoLocator =
+            $"//input[@type='radio' and @id='{countryCode}' and @name='{countryCode}_jurisdiction-vat-registration-group']/ancestor::label//small[text()='I already have a tax number.']";
+        await SelectRadioButton(registrationGroupNoLocator);
+
+        var retroactiveGroupNoLocator =
+            $"//input[@type='radio' and @id='{countryCode}' and @name='{countryCode}_jurisdiction-retroactive-group']/ancestor::label//small[text()='All tax returns filed']";
+        await SelectRadioButton(retroactiveGroupNoLocator);
+        var retroactiveGroupYesLocator =
+            $"//input[@type='radio' and @id='{countryCode}' and @name='{countryCode}_jurisdiction-retroactive-group']/ancestor::label//small[text()='Need to file tax returns']";
+        await SelectRadioButton(retroactiveGroupYesLocator);
+    }
+
+    private async Task SelectDateAsFirstRetroactivePeriod()
+    {
+        await CleanPage.Locator("[placeholder='YYYY-MM']").ClickAsync();
+        await CleanPage.Locator("//span[normalize-space(text())='Jan']").ClickAsync();
+
+        // TODO 2025-January is not set although the date picker is closed
+        await Assertions.Expect(CleanPage.Locator("//span[normalize-space(text())='Jan']")).ToBeHiddenAsync();
+    }
+
+    private async Task ClickOnPayMonthlyIfNotSelected()
+    {
+        var sliderLocator =
+            CleanPage.Locator("[data-unique-id='subscription-summary_recurring-interval'] .slider.round");
+        var parentLocator = CleanPage.Locator("[data-unique-id='subscription-summary_recurring-interval']");
+        var isSelected = await parentLocator.GetAttributeAsync("data-unique-meta_selected");
+
+        if (isSelected == "true") await sliderLocator.ClickAsync();
+    }
+
+    private async Task ClickOnTermsIfNotSelected()
+    {
+        var menuLocator = CleanPage.Locator("[data-unique-id='client-side-menu_terms-and-conditions']");
+        var menuAttr = await menuLocator.GetAttributeAsync("data-unique-meta_selected");
+
+        if (menuAttr == "false") await menuLocator.ClickAsync();
+    }
+
+    // TODO possibly this is in a wrong place shall be moved to another class
+    private async Task AssertMonthlyFeeIsGreaterThanZeroAsync()
+    {
+        await AllureApi.Step("Check that Monthly fee amount is greater than 0", async () =>
+        {
+            // Find the .amount child of the "Monthly fee" container
+            var amountLocator = CleanPage.Locator("xpath=//div[normalize-space(text())='Monthly fee']");
+
+            // Wait for it to be visible
+            await amountLocator.WaitForAsync();
+
+            // Get the text content, e.g., "€0"
+            var amountText = await amountLocator.InnerTextAsync();
+
+            // Remove non-numeric characters (except decimal separator)
+            var numericString = new string(amountText
+                    .Where(c => char.IsDigit(c) || c == '.' || c == ',')
+                    .ToArray())
+                .Replace(",", "."); // Normalize comma to dot for decimal parsing
+
+            // Parse and assert
+            if (!decimal.TryParse(numericString, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+                throw new Exception($"Unable to parse amount: '{amountText}'");
+
+            if (amount <= 0) throw new Exception($"Monthly fee is not greater than 0. Found: {amountText}");
+        });
+    }
+
+    private async Task SelectRadioButton(string radioSelector)
+    {
+        await CleanPage.WaitForSelectorAsync(radioSelector,
+            new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible, Timeout = 15000 });
+
+        await CleanPage.Locator(radioSelector)
+            .ClickAsync();
     }
 
 
     private async Task WaitForVatIds()
     {
-        await Page.WaitForSelectorAsync(VatIdSelector,
+        await CleanPage.WaitForSelectorAsync(VatIdSelector,
             new PageWaitForSelectorOptions { State = WaitForSelectorState.Attached });
-    }
-
-    public async Task SelectTaxRegistrationServiceOption(string option)
-    {
-        await Page.GetByLabel(string.Format(TaxRegistrationServiceLabel, option)).ClickAsync();
-    }
-
-    public async Task SelectOutstandingTaxReturnsOption(string option)
-    {
-        await Page.GetByLabel(string.Format(OutstandingTaxReturnsLabel, option)).ClickAsync();
-    }
-
-    public async Task SelectRandomRetroactivePeriod()
-    {
-        var randomDate = GenerateRandomPastDate();
-        var formattedDate = FormatDateForInput(randomDate);
-
-        await Page.GetByLabel(RetroactivePeriodLabel).FillAsync(formattedDate);
-        await Page.Keyboard.PressAsync("Enter");
-    }
-
-    public async Task AcceptTermsAndConditions()
-    {
-        await Page.GetByLabel(TermsAndConditionsLabel).ClickAsync();
-    }
-
-    public async Task AcceptPrivacyPolicy()
-    {
-        await Page.GetByLabel(PrivacyPolicyLabel).ClickAsync();
-    }
-
-    public async Task SelectPayMonthlyOption()
-    {
-        await Page.GetByRole(AriaRole.Radio, new PageGetByRoleOptions { Name = PayMonthlyOptionName }).ClickAsync();
-    }
-
-    public async Task VerifySubscriptionFees()
-    {
-        var monthlyFee = await GetFeeAmount(MonthlyFeeSelector);
-        var annualFee = await GetFeeAmount(AnnualFeeSelector);
-
-        AssertFeeValues(monthlyFee, annualFee);
-    }
-
-    private static DateTime GenerateRandomPastDate()
-    {
-        return DateTime.Now.AddDays(-new Random().Next(1, MaxRandomDaysBack));
-    }
-
-    private static string FormatDateForInput(DateTime date)
-    {
-        return date.ToString(DateFormat);
-    }
-
-    private async Task<decimal> GetFeeAmount(string selector)
-    {
-        var feeText = await Page.Locator(selector).InnerTextAsync();
-        return ExtractDecimalFromCurrencyString(feeText);
-    }
-
-    private static void AssertFeeValues(decimal monthlyFee, decimal annualFee)
-    {
-        Assert.That(monthlyFee, Is.Not.EqualTo(0m), "Monthly fee should not be 0€");
-        Assert.That(annualFee, Is.EqualTo(0m), "Annual fee should be 0€");
-    }
-
-    private static decimal ExtractDecimalFromCurrencyString(string currencyString)
-    {
-        var cleanedString = currencyString.Replace("€", "").Replace("$", "").Replace(",", "").Trim();
-        return decimal.TryParse(cleanedString, out var value) ? value : 0m;
     }
 }

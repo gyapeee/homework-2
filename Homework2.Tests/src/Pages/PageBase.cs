@@ -2,13 +2,13 @@
 
 namespace Homework2.Tests.Pages;
 
-public abstract class BasePage(IPage page)
+public abstract class PageBase(IPage page)
 {
     protected abstract string PageUrl { get; }
-    protected IPage Page => page;
+    protected IPage CleanPage => page;
 
     public async Task VerifyPageUrlAsync()
     {
-        await Assertions.Expect(Page).ToHaveURLAsync(PageUrl);
+        await Assertions.Expect(CleanPage).ToHaveURLAsync(PageUrl);
     }
 }

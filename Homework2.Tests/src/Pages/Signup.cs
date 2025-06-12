@@ -2,12 +2,12 @@
 
 namespace Homework2.Tests.Pages;
 
-public class SignupPage(IPage page) : BasePage(page)
+public class Signup(IPage page) : PageBase(page)
 {
     protected override string PageUrl => "https://app.taxually.com/verify";
 
     public async Task GoToAsync(string url)
     {
-        await Page.GotoAsync(url);
+        await CleanPage.GotoAsync(url);
     }
 }
