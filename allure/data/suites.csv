@@ -1,2 +1,2 @@
 "DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"This test verifies the complete tax registration flow from login to final subscription setup","22891","Complete Tax Registration Flow","","Thu Jun 12 14:27:41 GMT 2025","passed","Thu Jun 12 14:28:04 GMT 2025","","Tax Registration","TaxRegistrationTests","CompleteTaxRegistrationFlow"
+"This test verifies the complete tax registration flow from login to final subscription setup","29445","Complete Tax Registration Flow","","Thu Jun 12 21:45:36 GMT 2025","broken","Thu Jun 12 21:46:06 GMT 2025","","Tax Registration","TaxRegistrationTest","CompleteTaxRegistrationFlow"
