@@ -3,6 +3,8 @@
 📊 **Live Allure Report**  
 ➡️ [🔍 Click here to view the latest test report](https://gyapeee.github.io/homework-2/allure/)
 
+![How to find a trace of the failed test in Allure Report](doc/trace.gif)
+
 
 This project contains automated tests using Playwright, NUnit and .Net with reporting via Allure. Test execution and configuration are managed using a `.runsettings` file, which sets environment variables and test options for consistent and reproducible runs.
 
