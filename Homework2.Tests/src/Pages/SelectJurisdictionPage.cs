@@ -37,30 +37,6 @@ public class SelectJurisdiction(IPage page) : BasePage(page)
         await Task.WhenAll(elements.Take(count).Select(e => e.ClickAsync()));
     }
 
-    public async Task SelectSpecificCountry(string countryName)
-    {
-        await WaitForVatIds();
-        var vatElements = await Page.Locator(VatIdSelector).AllAsync();
-
-        var matchingElements = await Task.WhenAll(vatElements.Select(async vatContainer => new
-        {
-            Element = vatContainer,
-            CountryOption = vatContainer.Locator($"*:text('{countryName}')"),
-            Count = await vatContainer.Locator($"*:text('{countryName}')").CountAsync()
-        }));
-
-        var firstMatchingElement = matchingElements.FirstOrDefault(e => e.Count > 0);
-
-        if (firstMatchingElement != null)
-        {
-            await firstMatchingElement.CountryOption.First.ClickAsync();
-            return;
-        }
-
-        throw new InvalidOperationException(
-            $"The given country ('{countryName}') is missing in VAT_ containers.");
-    }
-
     public async Task SelectSpecificCountryAndClickRadios(string countryName)
     {
         await WaitForVatIds();
@@ -87,26 +63,20 @@ public class SelectJurisdiction(IPage page) : BasePage(page)
 
         var countryCode = containerId.Substring("VAT_".Length); // pl. "AT"
 
-        // input[type='radio'][id='DE'][value='true']
-        await Page.Locator($"input[type='radio'][id='{countryCode}'][value='true']")
-            .Locator("xpath=..") //
-            .Locator("span:text('Yes')")
-            .ClickAsync();
-        await Page.Locator($"input[type='radio'][id='{countryCode}']:not([value='true'])")
-            .Locator("xpath=..") //
-            .Locator("span:text('No')")
-            .ClickAsync();
-        
         await Page.PauseAsync();
-        
-        // await Page.Locator($"input[type='radio'][id='{countryCode}']:not([value='true'])")
-        //     .Locator("xpath=..") //
-        //     .Locator("span:text('No')")
-        //     .ClickAsync();
-        // await Page.Locator($"input[type='radio'][id='{countryCode}'][value='true']")
-        //     .Locator("xpath=..") //
-        //     .Locator("span:text('Yes')")
-        //     .ClickAsync();
+
+        // input[type='radio'][value='true'][id='DE'][name='DE_jurisdiction-vat-registration-group']
+        await Page.Locator(
+                $"input[type='radio'][id='{countryCode}'][name='{countryCode}_jurisdiction-vat-registration-group']")
+            .Locator("xpath=ancestor::label//span[text()='Yes']").ClickAsync();
+
+        await Page.PauseAsync();
+
+        await Page.Locator(
+                $"input[type='radio'][id='{countryCode}'][name='{countryCode}_jurisdiction-vat-registration-group']")
+            .Locator("xpath=ancestor::label//span[text()='No']").ClickAsync();
+
+        await Page.PauseAsync();
     }
 
 
