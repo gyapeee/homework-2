@@ -8,6 +8,6 @@ public class Signup(IPage page) : PageBase(page)
 
     public async Task GoToAsync(string url)
     {
-        await CleanPage.GotoAsync(url);
+        await Page.GotoAsync(url);
     }
 }

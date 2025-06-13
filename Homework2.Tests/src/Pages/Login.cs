@@ -10,16 +10,16 @@ public class Login : PageBase
 
     public Login(IPage page) : base(page)
     {
-        _emailInput = CleanPage.Locator("[name='Email Address']"); // Adjust locators as per your app
-        _passwordInput = CleanPage.Locator("[name='Password']");
-        _loginButton = CleanPage.Locator("#next");
+        _emailInput = Page.Locator("[name='Email Address']"); // Adjust locators as per your app
+        _passwordInput = Page.Locator("[name='Password']");
+        _loginButton = Page.Locator("#next");
     }
 
     protected override string PageUrl => "https://app.taxually.com/login";
 
     public async Task GoToAsync(string url)
     {
-        await CleanPage.GotoAsync(url);
+        await Page.GotoAsync(url);
     }
 
     public async Task LoginAsync(string email, string password)

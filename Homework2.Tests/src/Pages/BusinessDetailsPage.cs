@@ -19,19 +19,19 @@ public class BusinessDetails : PageBase
 
     public BusinessDetails(IPage page) : base(page)
     {
-        _businessTypeEcommerceRadioButton = CleanPage.GetByTestId("about-your-business_company-type-label-e-commerce");
-        _businessLegalStatusDropdown = CleanPage.GetByTestId("about-your-business_legal-status-select");
-        _individualOption = CleanPage.Locator("ng-dropdown-panel span",
+        _businessTypeEcommerceRadioButton = Page.GetByTestId("about-your-business_company-type-label-e-commerce");
+        _businessLegalStatusDropdown = Page.GetByTestId("about-your-business_legal-status-select");
+        _individualOption = Page.Locator("ng-dropdown-panel span",
             new PageLocatorOptions { HasTextString = "Individual/Sole Proprietor" });
-        _countryDropdown = CleanPage.GetByTestId("about-your-business_establishment-country-id-select");
-        _nameInput = CleanPage.GetByTestId("about-your-business_legal-name-of-business-input").Locator("input");
+        _countryDropdown = Page.GetByTestId("about-your-business_establishment-country-id-select");
+        _nameInput = Page.GetByTestId("about-your-business_legal-name-of-business-input").Locator("input");
         _countryOption =
-            CleanPage.Locator("ng-dropdown-panel span", new PageLocatorOptions { HasTextString = "Hungary" });
-        _streetInput = CleanPage.GetByTestId("about-your-business_street-input").Locator("input");
-        _houseNumber = CleanPage.GetByTestId("about-your-business_house-number-input").Locator("input");
-        _cityInput = CleanPage.GetByTestId("about-your-business_city-input").Locator("input");
-        _zipCodeInput = CleanPage.GetByTestId("about-your-business_zip-code-input").Locator("input");
-        _nextButton = CleanPage.GetByTestId("about-your-business_next-btn");
+            Page.Locator("ng-dropdown-panel span", new PageLocatorOptions { HasTextString = "Hungary" });
+        _streetInput = Page.GetByTestId("about-your-business_street-input").Locator("input");
+        _houseNumber = Page.GetByTestId("about-your-business_house-number-input").Locator("input");
+        _cityInput = Page.GetByTestId("about-your-business_city-input").Locator("input");
+        _zipCodeInput = Page.GetByTestId("about-your-business_zip-code-input").Locator("input");
+        _nextButton = Page.GetByTestId("about-your-business_next-btn");
     }
 
     protected override string PageUrl =>

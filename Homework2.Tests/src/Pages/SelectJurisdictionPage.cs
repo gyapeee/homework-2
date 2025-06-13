@@ -15,7 +15,7 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
     public async Task SelectTargetCountry(int count)
     {
         await WaitForVatIds();
-        var elements = await CleanPage.Locator(VatIdSelector).AllAsync();
+        var elements = await Page.Locator(VatIdSelector).AllAsync();
         var totalAvailable = elements.Count;
 
         if (count > totalAvailable)
@@ -28,7 +28,7 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
     public async Task SelectSpecificCountryAndClickRadios(string countryName)
     {
         await WaitForVatIds();
-        var vatElements = await CleanPage.Locator(VatIdSelector).AllAsync();
+        var vatElements = await Page.Locator(VatIdSelector).AllAsync();
 
         var matchingElements = await Task.WhenAll(vatElements.Select(async vatContainer => new
         {
@@ -94,21 +94,20 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
 
     private async Task SelectDateAsFirstRetroactivePeriod()
     {
-        await CleanPage.PauseAsync();
-        await CleanPage.Locator("[placeholder='YYYY-MM']").ClickAsync();
-        await CleanPage.PauseAsync();
-        await CleanPage.Locator("//span[normalize-space(text())='Jan']").ClickAsync();
-
-        await CleanPage.PauseAsync();
+        await Page.PauseAsync();
+        await Page.Locator("[placeholder='YYYY-MM']").ClickAsync();
+        await Page.PauseAsync();
+        await Page.Locator("//span[normalize-space(text())='Jan']").ClickAsync();
+        await Page.PauseAsync();
         // TODO 2025-January is not set although the date picker is closed
-        await Assertions.Expect(CleanPage.Locator("//span[normalize-space(text())='Feb']")).ToBeHiddenAsync();
+        await Assertions.Expect(Page.Locator("//span[normalize-space(text())='Feb']")).ToBeHiddenAsync();
     }
 
     public async Task ClickOnPayMonthlyIfNotSelected()
     {
         var sliderLocator =
-            CleanPage.Locator("[data-unique-id='subscription-summary_recurring-interval'] .slider.round");
-        var parentLocator = CleanPage.Locator("[data-unique-id='subscription-summary_recurring-interval']");
+            Page.Locator("[data-unique-id='subscription-summary_recurring-interval'] .slider.round");
+        var parentLocator = Page.Locator("[data-unique-id='subscription-summary_recurring-interval']");
         var isSelected = await parentLocator.GetAttributeAsync("data-unique-meta_selected");
 
         if (isSelected == "true") await sliderLocator.ClickAsync();
@@ -116,7 +115,7 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
 
     public async Task ClickOnTermsIfNotSelected()
     {
-        var menuLocator = CleanPage.Locator("[data-unique-id='client-side-menu_terms-and-conditions']");
+        var menuLocator = Page.Locator("[data-unique-id='client-side-menu_terms-and-conditions']");
         var menuAttr = await menuLocator.GetAttributeAsync("data-unique-meta_selected");
 
         if (menuAttr == "false") await menuLocator.ClickAsync();
@@ -127,7 +126,7 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
         await AllureApi.Step("Check that Monthly fee amount is greater than 0", async () =>
         {
             // Find the .amount child of the "Monthly fee" container
-            var amountLocator = CleanPage.Locator("xpath=//div[normalize-space(text())='Monthly fee']");
+            var amountLocator = Page.Locator("xpath=//div[normalize-space(text())='Monthly fee']");
 
             // Wait for it to be visible
             await amountLocator.WaitForAsync();
@@ -151,17 +150,17 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
 
     private async Task SelectRadioButton(string radioSelector)
     {
-        await CleanPage.WaitForSelectorAsync(radioSelector,
+        await Page.WaitForSelectorAsync(radioSelector,
             new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible, Timeout = 15000 });
 
-        await CleanPage.Locator(radioSelector)
+        await Page.Locator(radioSelector)
             .ClickAsync();
     }
 
 
     private async Task WaitForVatIds()
     {
-        await CleanPage.WaitForSelectorAsync(VatIdSelector,
+        await Page.WaitForSelectorAsync(VatIdSelector,
             new PageWaitForSelectorOptions { State = WaitForSelectorState.Attached });
     }
 }
