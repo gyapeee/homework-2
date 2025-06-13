@@ -1,1 +1,1 @@
-[{"uid":"3de0aba8dc895e62","name":"Complete Tax Registration Flow","time":{"start":1749832012479,"stop":1749832034681,"duration":22202},"status":"passed","severity":"critical"},{"uid":"f81fe8e2e4ee4238","name":"Complete Tax Registration Flow","time":{"start":1749832034705,"stop":1749832065358,"duration":30653},"status":"broken","severity":"critical"}]
+[{"uid":"700b75aba144aa23","name":"Complete Tax Registration Flow","time":{"start":1749834346472,"stop":1749834377595,"duration":31123},"status":"broken","severity":"critical"}]
