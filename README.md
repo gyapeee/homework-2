@@ -43,3 +43,12 @@ When running or debugging tests, the `.runsettings` file ensures all required en
   dotnet test --no-build --verbosity normal --settings Homework2.Tests/.runsettings
   ```
 - For debugging, uncomment `<PWDEBUG>1</PWDEBUG>` in the `.runsettings` file to enable Playwright debug mode (non-headless, with devtools).
+
+ ## Findings
+ # The design of the test case should be more robust
+ - Every test should run in a clean environment: 
+   - new user shall be created for a new test run this might solve the instability of this test case(why the Retry is required now)
+   - or Saved date in forms shall be cleared, via api call or ui flow, eg.
+     ![Clear from from UI](doc/clearn_form.gif)
+   - if the test is to test that the registration date is saved, then the test case should be designed accordingly
+
