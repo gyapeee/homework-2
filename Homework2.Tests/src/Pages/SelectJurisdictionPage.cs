@@ -52,25 +52,39 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
             Timeout = 5000
         });
 
-        // Click the label (the Germany text acts as the checkbox label)
-        await firstMatchingElement.CountryOption.First.ClickAsync();
+        // Click on the Country if that is not checked
+        await checkboxContainer.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
 
-        // Wait until the checkbox gets the "checked" class
-        await Assertions.Expect(checkboxContainer).ToHaveClassAsync(
-            new Regex(".*tuui-checkbox-checkmark-checked.*"), new LocatorAssertionsToHaveClassOptions
-            {
-                Timeout = 5000
-            });
+        var isDeSelected = await WaitForChildAsync(checkboxContainer, "tuui-icon");
+        if (!isDeSelected)
+        {
+            // Click the label (the Germany text acts as the checkbox label)
+            await firstMatchingElement.CountryOption.First.ClickAsync();
+
+            // Wait until the checkbox gets the "checked" class
+            await Assertions.Expect(checkboxContainer).ToHaveClassAsync(
+                new Regex(".*tuui-checkbox-checkmark-checked.*"), new LocatorAssertionsToHaveClassOptions
+                {
+                    Timeout = 5000
+                });
+        }
+
 
         // Get POSTFIX from ID attribute (pl. VAT_AT -> AT)
         var containerId = await firstMatchingElement.Element.GetAttributeAsync("id");
+        var countryCode = GetCountryCode(containerId);
+
+        await ClickOnAllRadioButtonsOfCountry(countryCode);
+        await SelectDateAsFirstRetroactivePeriod();
+    }
+
+    private static string GetCountryCode(string? containerId)
+    {
         if (string.IsNullOrWhiteSpace(containerId) || !containerId.StartsWith("VAT_"))
             throw new InvalidOperationException($"Can't get the postfix from ID: '{containerId}'");
 
         var countryCode = containerId.Substring("VAT_".Length); // pl. "AT"
-
-        await ClickOnAllRadioButtonsOfCountry(countryCode);
-        await SelectDateAsFirstRetroactivePeriod();
+        return countryCode;
     }
 
     private async Task ClickOnAllRadioButtonsOfCountry(string countryCode)
@@ -92,13 +106,14 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
         await SelectRadioButton(retroactiveGroupYesLocator);
     }
 
+
     private async Task SelectDateAsFirstRetroactivePeriod()
     {
-        await Page.PauseAsync();
+        //await Page.PauseAsync();
         await Page.Locator("[placeholder='YYYY-MM']").ClickAsync();
-        await Page.PauseAsync();
+        //await Page.PauseAsync();
         await Page.Locator("//span[normalize-space(text())='Jan']").ClickAsync();
-        await Page.PauseAsync();
+        //await Page.PauseAsync();
         // TODO 2025-January is not set although the date picker is closed
         await Assertions.Expect(Page.Locator("//span[normalize-space(text())='Feb']")).ToBeHiddenAsync();
     }
@@ -145,6 +160,8 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
                 throw new Exception($"Unable to parse amount: '{amountText}'");
 
             if (amount <= 0) throw new Exception($"Monthly fee is not greater than 0. Found: {amountText}");
+
+            await Page.PauseAsync();
         });
     }
 
@@ -162,5 +179,22 @@ public class SelectJurisdiction(IPage page) : PageBase(page)
     {
         await Page.WaitForSelectorAsync(VatIdSelector,
             new PageWaitForSelectorOptions { State = WaitForSelectorState.Attached });
+    }
+
+    public async Task<bool> WaitForChildAsync(ILocator parent, string selector, int timeoutMs = 5000)
+    {
+        try
+        {
+            await parent.Locator(selector).WaitForAsync(new LocatorWaitForOptions
+            {
+                Timeout = timeoutMs,
+                State = WaitForSelectorState.Visible
+            });
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            return false;
+        }
     }
 }

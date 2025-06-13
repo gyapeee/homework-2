@@ -8,6 +8,8 @@ namespace Homework2.Tests;
 public class TaxRegistrationTest : TestBase
 {
     [Test]
+    [Repeat(100)]
+    [Parallelizable(ParallelScope.Self)]
     [AllureName("Complete Tax Registration Flow")]
     [AllureEpic("Onboarding")]
     [AllureFeature("Business Registration")]

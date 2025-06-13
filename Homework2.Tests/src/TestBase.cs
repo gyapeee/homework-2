@@ -2,7 +2,6 @@
 using Allure.NUnit;
 using Homework2.Tests.Pages;
 using Microsoft.Playwright;
-using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
@@ -13,23 +12,23 @@ public abstract class TestBase
 {
     protected readonly TestCredentials Credentials = TestCredentials.FromEnvironmentOrDefaults();
 
-    protected IBrowser Browser { get; private set; }
-    protected IBrowserContext Context { get; private set; }
-    protected IPage Page { get; private set; }
-    
-    protected Login LoginPage = null!;
-    protected Signup SignupPage = null!;
     protected BusinessDetails BusinessDetailsPage = null!;
+    protected Login LoginPage = null!;
     protected SelectJurisdiction SelectJurisdictionPage = null!;
+    protected Signup SignupPage = null!;
+
+    private IBrowser? Browser { get; set; }
+    private IBrowserContext? Context { get; set; }
+    private IPage? Page { get; set; }
 
     [SetUp]
-    public async Task BaseSetUp()
+    public async Task SetUp()
     {
         var playwright = await Playwright.CreateAsync();
         Browser = await playwright.Chromium.LaunchAsync();
         Context = await Browser.NewContextAsync();
         Page = await Context.NewPageAsync();
-        
+
         await Context.Tracing.StartAsync(new TracingStartOptions
         {
             Screenshots = true,
@@ -47,7 +46,7 @@ public abstract class TestBase
     }
 
     [TearDown]
-    public async Task BaseTearDown()
+    public async Task TearDown()
     {
         try
         {
@@ -55,7 +54,7 @@ public abstract class TestBase
             if (testResult.Outcome.Status == TestStatus.Failed)
                 await SaveAndAttachPlaywrightTraceOnFailure();
             else
-                await Context.Tracing.StopAsync();
+                await Context!.Tracing.StopAsync();
         }
         catch (Exception ex)
         {
@@ -64,8 +63,8 @@ public abstract class TestBase
         }
         finally
         {
-            await Context.CloseAsync();
-            await Browser.CloseAsync();
+            await Context!.CloseAsync();
+            await Browser!.CloseAsync();
         }
     }
 
@@ -93,7 +92,7 @@ public abstract class TestBase
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var traceName = $"trace-{testName}-{timestamp}.zip";
 
-            await Context.Tracing.StopAsync(new TracingStopOptions { Path = traceName });
+            await Context!.Tracing.StopAsync(new TracingStopOptions { Path = traceName });
 
             AllureApi.AddAttachment("Playwright Trace (Download)", "application/zip", traceName);
 
