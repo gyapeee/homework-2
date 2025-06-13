@@ -5,11 +5,11 @@ using NUnit.Framework;
 namespace Homework2.Tests;
 
 [AllureSuite("Tax Registration")]
+[Parallelizable(ParallelScope.Self)]
 public class TaxRegistrationTest : TestBase
 {
     [Test]
-    [Repeat(100)]
-    [Parallelizable(ParallelScope.Self)]
+    [Retry(3)]
     [AllureName("Complete Tax Registration Flow")]
     [AllureEpic("Onboarding")]
     [AllureFeature("Business Registration")]
