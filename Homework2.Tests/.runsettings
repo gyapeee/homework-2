@@ -3,6 +3,7 @@
     <!-- NUnit adapter -->
     <NUnit>
         <NumberOfTestWorkers>24</NumberOfTestWorkers>
+        <EngineEnabled>true</EngineEnabled>
     </NUnit>
     <!-- General run configuration -->
     <RunConfiguration>
@@ -25,9 +26,5 @@
             <Headless>true</Headless>
         </LaunchOptions>
     </Playwright>
-    <!-- NUnit for Allure -->
-    <NUnit>
-        <EngineEnabled>true</EngineEnabled>
-    </NUnit>
 </RunSettings>
 
