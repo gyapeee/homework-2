@@ -5,7 +5,7 @@ using Microsoft.Playwright;
 
 namespace Homework2.Tests.Pages;
 
-public class SelectJurisdiction(IPage CleanPage) : PageBase(CleanPage)
+public class SelectJurisdiction(IPage page) : PageBase(page)
 {
     private static readonly string VatIdSelector = "[id^='VAT_']";
 
@@ -70,14 +70,7 @@ public class SelectJurisdiction(IPage CleanPage) : PageBase(CleanPage)
         var countryCode = containerId.Substring("VAT_".Length); // pl. "AT"
 
         await ClickOnAllRadioButtonsOfCountry(countryCode);
-
         await SelectDateAsFirstRetroactivePeriod();
-        await ClickOnTermsIfNotSelected();
-        await ClickOnPayMonthlyIfNotSelected();
-        await AssertMonthlyFeeIsGreaterThanZeroAsync();
-
-        //app-calendar-input
-        await CleanPage.PauseAsync();
     }
 
     private async Task ClickOnAllRadioButtonsOfCountry(string countryCode)
@@ -93,6 +86,7 @@ public class SelectJurisdiction(IPage CleanPage) : PageBase(CleanPage)
         var retroactiveGroupNoLocator =
             $"//input[@type='radio' and @id='{countryCode}' and @name='{countryCode}_jurisdiction-retroactive-group']/ancestor::label//small[text()='All tax returns filed']";
         await SelectRadioButton(retroactiveGroupNoLocator);
+
         var retroactiveGroupYesLocator =
             $"//input[@type='radio' and @id='{countryCode}' and @name='{countryCode}_jurisdiction-retroactive-group']/ancestor::label//small[text()='Need to file tax returns']";
         await SelectRadioButton(retroactiveGroupYesLocator);
@@ -100,14 +94,17 @@ public class SelectJurisdiction(IPage CleanPage) : PageBase(CleanPage)
 
     private async Task SelectDateAsFirstRetroactivePeriod()
     {
+        await CleanPage.PauseAsync();
         await CleanPage.Locator("[placeholder='YYYY-MM']").ClickAsync();
+        await CleanPage.PauseAsync();
         await CleanPage.Locator("//span[normalize-space(text())='Jan']").ClickAsync();
 
+        await CleanPage.PauseAsync();
         // TODO 2025-January is not set although the date picker is closed
-        await Assertions.Expect(CleanPage.Locator("//span[normalize-space(text())='Jan']")).ToBeHiddenAsync();
+        await Assertions.Expect(CleanPage.Locator("//span[normalize-space(text())='Feb']")).ToBeHiddenAsync();
     }
 
-    private async Task ClickOnPayMonthlyIfNotSelected()
+    public async Task ClickOnPayMonthlyIfNotSelected()
     {
         var sliderLocator =
             CleanPage.Locator("[data-unique-id='subscription-summary_recurring-interval'] .slider.round");
@@ -117,7 +114,7 @@ public class SelectJurisdiction(IPage CleanPage) : PageBase(CleanPage)
         if (isSelected == "true") await sliderLocator.ClickAsync();
     }
 
-    private async Task ClickOnTermsIfNotSelected()
+    public async Task ClickOnTermsIfNotSelected()
     {
         var menuLocator = CleanPage.Locator("[data-unique-id='client-side-menu_terms-and-conditions']");
         var menuAttr = await menuLocator.GetAttributeAsync("data-unique-meta_selected");
@@ -125,8 +122,7 @@ public class SelectJurisdiction(IPage CleanPage) : PageBase(CleanPage)
         if (menuAttr == "false") await menuLocator.ClickAsync();
     }
 
-    // TODO possibly this is in a wrong place shall be moved to another class
-    private async Task AssertMonthlyFeeIsGreaterThanZeroAsync()
+    public async Task AssertMonthlyFeeIsGreaterThanZeroAsync()
     {
         await AllureApi.Step("Check that Monthly fee amount is greater than 0", async () =>
         {

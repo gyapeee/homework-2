@@ -9,25 +9,28 @@ using NUnit.Framework.Interfaces;
 namespace Homework2.Tests;
 
 [AllureNUnit]
-public abstract class TestBase : PageTest
+public abstract class TestBase
 {
     protected readonly TestCredentials Credentials = TestCredentials.FromEnvironmentOrDefaults();
 
-    protected BusinessDetails BusinessDetails = null!;
-
-    protected IBrowserContext CleanContext = null!;
-    protected IPage CleanPage = null!;
-    protected Login Login = null!;
-    protected SelectJurisdiction SelectJurisdiction = null!;
-    protected Signup Signup = null!;
+    protected IBrowser Browser { get; private set; }
+    protected IBrowserContext Context { get; private set; }
+    protected IPage Page { get; private set; }
+    
+    protected Login LoginPage = null!;
+    protected Signup SignupPage = null!;
+    protected BusinessDetails BusinessDetailsPage = null!;
+    protected SelectJurisdiction SelectJurisdictionPage = null!;
 
     [SetUp]
     public async Task BaseSetUp()
     {
-        CleanContext = await Browser.NewContextAsync();
-        CleanPage = await CleanContext.NewPageAsync();
-
-        await CleanContext.Tracing.StartAsync(new TracingStartOptions
+        var playwright = await Playwright.CreateAsync();
+        Browser = await playwright.Chromium.LaunchAsync();
+        Context = await Browser.NewContextAsync();
+        Page = await Context.NewPageAsync();
+        
+        await Context.Tracing.StartAsync(new TracingStartOptions
         {
             Screenshots = true,
             Snapshots = true,
@@ -35,14 +38,12 @@ public abstract class TestBase : PageTest
         });
 
 
-        Playwright.Selectors.SetTestIdAttribute("data-unique-id");
+        playwright.Selectors.SetTestIdAttribute("data-unique-id");
 
-        Login = new Login(CleanPage);
-        Signup = new Signup(CleanPage);
-        BusinessDetails = new BusinessDetails(CleanPage);
-        SelectJurisdiction = new SelectJurisdiction(CleanPage);
-
-        await AdditionalSetUp();
+        LoginPage = new Login(Page);
+        SignupPage = new Signup(Page);
+        BusinessDetailsPage = new BusinessDetails(Page);
+        SelectJurisdictionPage = new SelectJurisdiction(Page);
     }
 
     [TearDown]
@@ -54,7 +55,7 @@ public abstract class TestBase : PageTest
             if (testResult.Outcome.Status == TestStatus.Failed)
                 await SaveAndAttachPlaywrightTraceOnFailure();
             else
-                await CleanContext.Tracing.StopAsync();
+                await Context.Tracing.StopAsync();
         }
         catch (Exception ex)
         {
@@ -63,21 +64,9 @@ public abstract class TestBase : PageTest
         }
         finally
         {
-            await AdditionalTearDown();
-
-            await CleanPage.CloseAsync();
-            await CleanContext.CloseAsync();
+            await Context.CloseAsync();
+            await Browser.CloseAsync();
         }
-    }
-
-    protected virtual async Task AdditionalSetUp()
-    {
-        await Task.CompletedTask;
-    }
-
-    protected virtual async Task AdditionalTearDown()
-    {
-        await Task.CompletedTask;
     }
 
     protected async Task ExecuteTestWithTracing(Func<Task> testAction)
@@ -104,7 +93,7 @@ public abstract class TestBase : PageTest
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var traceName = $"trace-{testName}-{timestamp}.zip";
 
-            await CleanContext.Tracing.StopAsync(new TracingStopOptions { Path = traceName });
+            await Context.Tracing.StopAsync(new TracingStopOptions { Path = traceName });
 
             AllureApi.AddAttachment("Playwright Trace (Download)", "application/zip", traceName);
 

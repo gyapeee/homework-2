@@ -22,8 +22,6 @@ public class TaxRegistrationTest : TestBase
             await NavigateToBusinessRegsitration();
             await FillBusinessDetailsAndGoToSelectJurisdiction();
             await SelectTargetJurisdiction();
-
-            await Page.PauseAsync();
         });
     }
 
@@ -35,7 +33,7 @@ public class TaxRegistrationTest : TestBase
                                  "er of target countries", async () =>
             {
                 var numberOfSelectedCountries = 1;
-                await SelectJurisdiction.SelectTargetCountry(numberOfSelectedCountries);
+                await SelectJurisdictionPage.SelectTargetCountry(numberOfSelectedCountries);
                 AllureLifecycle.Instance.UpdateTestCase(x =>
                     x.parameters.Add(new Parameter
                         { name = "Number of countries", value = numberOfSelectedCountries.ToString() }));
@@ -44,10 +42,19 @@ public class TaxRegistrationTest : TestBase
             await AllureApi.Step("Select specific country: Germany", async () =>
             {
                 var countryName = "Germany";
-                await SelectJurisdiction.SelectSpecificCountryAndClickRadios(countryName);
+                await SelectJurisdictionPage.SelectSpecificCountryAndClickRadios(countryName);
                 AllureLifecycle.Instance.UpdateTestCase(x =>
                     x.parameters.Add(new Parameter { name = "Selected country", value = countryName }));
             });
+
+            await AllureApi.Step("Click on Terms of Service if not selected",
+                async () => { await SelectJurisdictionPage.ClickOnTermsIfNotSelected(); });
+
+            await AllureApi.Step("Toggle Pay Monthly if not selected",
+                async () => { await SelectJurisdictionPage.ClickOnPayMonthlyIfNotSelected(); });
+
+            await AllureApi.Step("Assert that the Monthly Fee is greater than 0",
+                async () => { await SelectJurisdictionPage.AssertMonthlyFeeIsGreaterThanZeroAsync(); });
         });
     }
 
@@ -55,9 +62,10 @@ public class TaxRegistrationTest : TestBase
     {
         await AllureApi.Step("Fill business details", async () =>
         {
-            await BusinessDetails.FillBusinessDetailsAsync();
-            await BusinessDetails.ClickNextAsync();
-            await SelectJurisdiction.VerifyPageUrlAsync();
+            await BusinessDetailsPage.FillBusinessDetailsAsync();
+            await BusinessDetailsPage.ClickNextAsync();
+            await BusinessDetailsPage.VerifyPageUrlAsync();
+            await SelectJurisdictionPage.VerifyPageUrlAsync();
         });
     }
 
@@ -65,8 +73,8 @@ public class TaxRegistrationTest : TestBase
     {
         await AllureApi.Step("Navigate to business registration page", async () =>
         {
-            await Signup.GoToAsync("https://app.taxually.com/signup");
-            await BusinessDetails.VerifyPageUrlAsync();
+            await SignupPage.GoToAsync("https://app.taxually.com/signup");
+            await BusinessDetailsPage.VerifyPageUrlAsync();
         });
     }
 
@@ -74,10 +82,10 @@ public class TaxRegistrationTest : TestBase
     {
         await AllureApi.Step("Navigate to login page and authenticate", async () =>
         {
-            await Login.GoToAsync("https://app.taxually.com/");
+            await LoginPage.GoToAsync("https://app.taxually.com/");
             //await Login.VerifyPageUrlAsync(); // This fails the test, but login can happen without it
-            await Login.LoginAsync(Credentials.Email, Credentials.Password);
-            await Signup.VerifyPageUrlAsync();
+            await LoginPage.LoginAsync(Credentials.Email, Credentials.Password);
+            await SignupPage.VerifyPageUrlAsync();
 
             AllureLifecycle.Instance.UpdateTestCase(x =>
                 x.parameters.Add(new Parameter { name = "Email", value = Credentials.Email }));
